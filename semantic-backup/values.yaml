@@ -62,12 +62,12 @@ appsettings:
       Directory: "/backups/"
     Smtp:
       SMTPEnableSSL: true
-      SMTPHost: "mail.smtp.domain.com"
+      SMTPHost: ""
       SMTPPort: 587
-      SMTPEmailAddress: "backups@example.com"
+      SMTPEmailAddress: ""
       SMTPEmailCredentials: ""
-      SMTPDefaultSMTPFromName: "SEMANTIC SYSTEM BACKUP"
-      SMTPDestinations: "ops@example.com"
+      SMTPDefaultSMTPFromName: ""
+      SMTPDestinations: ""
     ObjectStorage:
       Server: "localhost"
       Port: 9000
@@ -93,9 +93,9 @@ appsettings:
     ExecutionTimeoutInMinutes: 10
     InDepthBackupRecordDeleteEnabled: true
 
-    SMTPEmailAddress: "backups@example.com"
+    SMTPEmailAddress: ""
     SMTPEmailCredentials: ""
     SMTPPort: 587
     SMTPEnableSSL: false
-    SMTPHost: "smtp.example.com"
-    SMTPDefaultSMTPFromName: "SEMANTIC SYSTEM BACKUP"
+    SMTPHost: ""
+    SMTPDefaultSMTPFromName: ""
