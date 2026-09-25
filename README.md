@@ -5,7 +5,6 @@
 ### My custom Helm charts. Built for my clusters. Shared for yours. ❤️
 
 [![Validate charts](https://github.com/swagfin/helm/actions/workflows/validate.yml/badge.svg)](https://github.com/swagfin/helm/actions/workflows/validate.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-orange.svg)](LICENSE)
 ![Helm 3](https://img.shields.io/badge/Helm-3-0F1689?logo=helm)
 ![Kubernetes](https://img.shields.io/badge/Made_for-Kubernetes-326CE5?logo=kubernetes&logoColor=white)
 
@@ -104,7 +103,7 @@ Found a rough edge? Have a clearer default or a useful improvement? [Open an iss
 
 Please include the chart name, Kubernetes version, and a small reproduction. Keep passwords, tokens, database connections, and private infrastructure details out of issues and examples.
 
-The chart code is available under the [MIT License](LICENSE). Third-party software and artwork retain their own licensing; see [THIRD_PARTY.md](THIRD_PARTY.md).
+Third-party software and artwork retain their own licensing; see [THIRD_PARTY.md](THIRD_PARTY.md).
 
 <div align="center">
 
