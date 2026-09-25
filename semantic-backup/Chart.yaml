@@ -1,0 +1,4 @@
+apiVersion: v2
+name: "semantic-backup"
+description: A Helm chart for Semantic Backup Client
+version: 1.0.1

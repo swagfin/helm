@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: default-landing-zone
+  namespace: {{ .Values.namespace | quote }}
+  annotations:
+    configmap.reloader.stakater.com/reload: "default-landing-zone-page"
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1 # allow one extra Pod to be created temporarily during update.
+      maxUnavailable: 1 # take down 1 Pod at before the new one is ready
+  selector:
+    matchLabels:
+      app: default-landing-zone
+  template:
+    metadata:
+      labels:
+        app: default-landing-zone
+    spec:
+      containers:
+        - name: default-landing-zone
+          image: nginx
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+
+          resources:
+            limits:
+              cpu: {{ .Values.limits.cpu }}
+              memory: {{ .Values.limits.memory }}
+
+          readinessProbe:
+            tcpSocket:
+              port: 80
+            initialDelaySeconds: 10
+            timeoutSeconds: 10
+
+          volumeMounts:
+            - name: www
+              mountPath: /usr/share/nginx/html
+              readOnly: true
+
+      volumes:
+        - name: www
+          configMap:
+            name: default-landing-zone-page

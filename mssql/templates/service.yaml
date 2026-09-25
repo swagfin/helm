@@ -1,0 +1,16 @@
+## service
+apiVersion: v1
+kind: Service
+metadata:
+  name: mssql
+  namespace: {{ .Release.Name }}
+spec:
+  selector:
+    app: mssql
+  ports:
+  - port: 1433
+    targetPort: 1433
+    name: tcp
+
+#### HOW TO CONNECT ##
+#mssql.{{ .Release.Name }}.svc.cluster.local:1433

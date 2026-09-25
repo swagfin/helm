@@ -1,0 +1,25 @@
+{{- range .Values.storageNodes }}
+---
+apiVersion: "longhorn.io/v1beta2"
+kind: "Node"
+metadata:
+  name: {{ .name | quote }}
+  namespace: {{ $.Release.Namespace | quote }}
+  annotations:
+    # Wait for the upstream CRDs and admission services before applying node config.
+    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-options: "Prune=false,Delete=false"
+spec:
+  name: {{ .name | quote }}
+  allowScheduling: true
+  tags:
+    - {{ $.Values.storageNodeTag | quote }}
+  disks:
+    infra-data:
+      path: {{ .path | default $.Values.storagePath | quote }}
+      diskType: "filesystem"
+      allowScheduling: true
+      storageReserved: {{ if hasKey . "storageReserved" }}{{ .storageReserved }}{{ else }}{{ $.Values.storageReserved }}{{ end }}
+      tags:
+        - {{ $.Values.storageDiskTag | quote }}
+{{- end }}

@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: {{ .Release.Name }}
+spec:
+  serviceName: redis
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        # Give the application group write access to its PVC.
+        fsGroup: 10001
+        fsGroupChangePolicy: "OnRootMismatch"
+      affinity:
+        # Keep the configured node placement for this release.
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - {{ .Values.hostNode }}
+
+      #allow pod to be scheduled even if node is not schedulable
+      tolerations:
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
+        effect: "NoSchedule"
+
+      containers:
+      - name: redis
+        image: {{ .Values.image }}
+        imagePullPolicy: IfNotPresent
+        command:
+          - "/bin/sh"
+          - "-c"
+        args:
+          - |
+            echo "generating redis configuration..."
+            cat <<EOF > /data/redis.conf
+            port 6379
+            appendonly yes
+            EOF
+            echo "starting redis with generated configuration..."
+            redis-server /data/redis.conf
+
+        ports:
+        - name: tcp
+          containerPort: 6379
+          {{- if gt (int .Values.hostPort) 0 }}
+          hostPort: {{ .Values.hostPort }} # on the node's IP
+          {{- end }}
+#readiness probe
+        readinessProbe:
+          tcpSocket:
+            port: 6379
+          initialDelaySeconds: 15
+          timeoutSeconds: 10
+
+#volume mounts
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
+
+      volumes:
+      - name: redis-data
+        persistentVolumeClaim:
+          claimName: "redis-data"
+
+---
+#Prevent provisoning more than 1 pod (to Other Nodes, guarantees thats only the one specified)
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: max-pod-limit
+  namespace: {{ .Release.Name }}
+spec:
+  hard:
+    pods: 1

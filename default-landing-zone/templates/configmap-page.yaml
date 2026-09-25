@@ -1,0 +1,267 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: default-landing-zone-page
+  namespace: {{ .Values.namespace | quote }}
+data:
+  index.html: |
+    <!doctype html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+      <title>Kubernetes Routing: Lost In Transit</title>
+      <meta name="description" content="Ingress fallback page for unknown hosts." />
+      <style>
+        :root {
+          --ink: #0f172a;
+          --ink-soft: #334155;
+          --panel: rgba(255, 255, 255, 0.9);
+          --panel-border: #dbe4f0;
+          --chip-bg: #fff4e8;
+          --chip-ink: #9a3412;
+        }
+        * { box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+          margin: 0;
+          min-height: 100vh;
+          font-family: "Bahnschrift", "Aptos", "Trebuchet MS", "Segoe UI", sans-serif;
+          color: var(--ink-soft);
+          background:
+            radial-gradient(circle at 12% 8%, rgba(255, 159, 67, 0.22), transparent 34%),
+            radial-gradient(circle at 88% 88%, rgba(96, 165, 250, 0.2), transparent 32%),
+            linear-gradient(135deg, #f7fbff, #eef4fb 55%, #f5f8fc);
+        }
+        .page {
+          min-height: 100vh;
+          padding: 24px;
+        }
+        .nav {
+          max-width: 1120px;
+          margin: 0 auto;
+          display: flex;
+          align-items: center;
+          justify-content: flex-start;
+          gap: 16px;
+        }
+        .brand {
+          text-decoration: none;
+          font-weight: 800;
+          font-size: clamp(1.45rem, 2.8vw, 2.35rem);
+          color: #0f172a;
+          letter-spacing: 0.01em;
+          line-height: 1.1;
+        }
+        .brand-gradient {
+          background: linear-gradient(90deg, #f97316, #fb923c 55%, #f59e0b);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+        }
+        .hero {
+          max-width: 1120px;
+          margin: 0 auto;
+          padding-top: 56px;
+          display: grid;
+          grid-template-columns: 1.05fr 1fr;
+          gap: 26px;
+          align-items: center;
+        }
+        .left {
+          min-width: 0;
+        }
+        .chip {
+          display: inline-block;
+          border-radius: 999px;
+          padding: 8px 13px;
+          background: var(--chip-bg);
+          color: var(--chip-ink);
+          font-size: 0.72rem;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          border: 1px solid #fed7aa;
+        }
+        h1 {
+          margin: 14px 0 10px;
+          font-size: clamp(2rem, 5.8vw, 3.65rem);
+          line-height: 1.02;
+          color: var(--ink);
+          letter-spacing: -0.02em;
+        }
+        .heading-gradient {
+          display: inline-block;
+          background: linear-gradient(90deg, #f97316, #fb923c 52%, #f59e0b);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+        }
+        .lead {
+          margin: 0 0 18px;
+          font-size: clamp(1rem, 2.3vw, 1.34rem);
+          line-height: 1.55;
+          color: #475569;
+        }
+        .glass {
+          background: var(--panel);
+          border: 1px solid var(--panel-border);
+          border-radius: 14px;
+          padding: 16px;
+          font-size: 0.96rem;
+          line-height: 1.5;
+          color: #334155;
+        }
+        .glass-row + .glass-row {
+          margin-top: 7px;
+        }
+        .support-link {
+          color: #c2410c;
+          text-decoration: underline;
+          text-underline-offset: 3px;
+          font-weight: 700;
+        }
+        .support-link:hover {
+          color: #ea580c;
+        }
+        code {
+          padding: 2px 7px;
+          border-radius: 7px;
+          background: #f1f5f9;
+          border: 1px solid #dbe4f0;
+          color: #0f172a;
+          font-family: Consolas, "Courier New", monospace;
+          font-size: 0.88rem;
+        }
+        .kubernetes-art {
+          display: grid;
+          place-items: center;
+          min-width: 0;
+          perspective: 900px;
+        }
+        .kubernetes-button {
+          width: 100%;
+          max-width: 480px;
+          padding: 24px;
+          border: 0;
+          border-radius: 28px;
+          background: transparent;
+          cursor: pointer;
+          transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+          transition: transform 180ms ease, background 180ms ease;
+        }
+        .kubernetes-button:hover {
+          background: rgba(255, 255, 255, 0.3);
+        }
+        .kubernetes-button:focus-visible {
+          outline: 3px solid #326de6;
+          outline-offset: 4px;
+        }
+        .kubernetes-button img {
+          display: block;
+          width: 100%;
+          height: auto;
+          filter: drop-shadow(0 20px 24px rgba(50, 109, 230, 0.16));
+          pointer-events: none;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .kubernetes-button { transform: none; transition: none; }
+        }
+        @media (max-width: 920px) {
+          .page { padding: 18px; }
+          .hero {
+            grid-template-columns: 1fr;
+            padding-top: 34px;
+            gap: 20px;
+          }
+          .left { text-align: center; }
+        }
+      </style>
+    </head>
+
+    <body>
+      <div class="page">
+        <header class="nav">
+          <a class="brand" href="#">
+            Kubernetes <span class="brand-gradient">Cluster</span>
+          </a>
+        </header>
+
+        <main class="hero">
+          <section class="left">
+            <span class="chip">Live</span>
+            <h1>
+              You reached the cluster.
+              <span class="heading-gradient">This route did not.</span>
+            </h1>
+            <p class="lead">
+              You might be lost, we might be deploying, or one node might be on a coffee break.
+            </p>
+
+            <div class="glass">
+              <div class="glass-row"><strong>Requested host:</strong> <code id="requested-host">unknown-host</code></div>
+              <div class="glass-row"><strong>Status:</strong> Cluster reachable, route not configured.</div>
+              <div class="glass-row"><strong>Hint:</strong> Add an Ingress rule for this hostname and redeploy.</div>
+              {{- with .Values.supportUrl }}
+              <div class="glass-row"><a class="support-link" href="{{ . | html }}" target="_blank" rel="noopener noreferrer">Contact Support Team</a></div>
+              {{- end }}
+            </div>
+          </section>
+
+          <section class="kubernetes-art" aria-label="Kubernetes illustration">
+            <button class="kubernetes-button" type="button" aria-label="Animate Kubernetes illustration" title="Click or press Enter to animate">
+              <img src="/kubernetes.svg" alt="Kubernetes" width="400" height="320" draggable="false" />
+            </button>
+          </section>
+        </main>
+
+      </div>
+
+      <script>
+        (function () {
+          var hostEl = document.getElementById("requested-host");
+          if (hostEl && window.location && window.location.host) {
+            hostEl.textContent = window.location.host;
+          }
+
+          var artwork = document.querySelector(".kubernetes-button");
+          var illustration = artwork.querySelector("img");
+          var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+          var animation;
+
+          function resetTilt() {
+            artwork.style.removeProperty("--tilt-x");
+            artwork.style.removeProperty("--tilt-y");
+          }
+
+          artwork.addEventListener("pointermove", function (event) {
+            if (reducedMotion.matches || event.pointerType !== "mouse") return;
+            var bounds = artwork.parentElement.getBoundingClientRect();
+            var x = (event.clientX - bounds.left) / bounds.width - 0.5;
+            var y = (event.clientY - bounds.top) / bounds.height - 0.5;
+            artwork.style.setProperty("--tilt-x", (-y * 14) + "deg");
+            artwork.style.setProperty("--tilt-y", (x * 14) + "deg");
+          });
+          artwork.addEventListener("pointerleave", resetTilt);
+          artwork.addEventListener("blur", resetTilt);
+          artwork.addEventListener("click", function () {
+            if (reducedMotion.matches || !illustration.animate) return;
+            if (animation) animation.cancel();
+            animation = illustration.animate([
+              { transform: "translateY(0) rotate(0deg)" },
+              { transform: "translateY(-12px) rotate(-6deg)", offset: 0.35 },
+              { transform: "translateY(-6px) rotate(4deg)", offset: 0.7 },
+              { transform: "translateY(0) rotate(0deg)" }
+            ], { duration: 650, easing: "ease-in-out" });
+          });
+          reducedMotion.addEventListener("change", function () {
+            resetTilt();
+            if (animation) animation.cancel();
+          });
+        })();
+      </script>
+    </body>
+    </html>
+  # Bundled illustration: https://github.com/swagfin
+  kubernetes.svg: |
+{{ .Files.Get "files/kubernetes.svg" | indent 4 }}

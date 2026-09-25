@@ -1,0 +1,4 @@
+apiVersion: v2
+name: "redis-distributed"
+description: A distributed redis
+version: 1.0.1

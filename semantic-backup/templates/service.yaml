@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: semantic-backup
+  namespace: {{ .Release.Name }}
+spec:
+  selector:
+    app: semantic-backup
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+
+#### HOW TO CONNECT ##
+#semantic-backup.{{ .Release.Name }}.svc.cluster.local:8080

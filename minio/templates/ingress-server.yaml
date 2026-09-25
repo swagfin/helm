@@ -1,0 +1,34 @@
+{{- if .Values.serverHost }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minio-ingress
+  namespace: {{ .Release.Name }}
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/proxy-body-size: {{ .Values.maxUploadSize }}
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+{{- if .Values.useLetsEncrypt }}
+    cert-manager.io/cluster-issuer: "letsencrypt"
+{{- end }}
+spec:
+{{- if .Values.useLetsEncrypt }}
+  ingressClassName: public
+  tls:
+  - hosts:
+    - {{ .Values.serverHost }}
+    secretName: {{ printf "%s-tls" (replace "." "-" .Values.serverHost) }}
+{{- end }}
+  rules:
+  - host: {{ .Values.serverHost }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: minio
+            port:
+              number: 9000
+{{- end }}

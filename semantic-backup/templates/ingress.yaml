@@ -1,0 +1,31 @@
+{{- if .Values.domain}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.domain}}
+  namespace: {{ .Release.Name }}
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+{{- if .Values.useLetsEncrypt }}
+    cert-manager.io/cluster-issuer: "letsencrypt"
+{{- end }}
+spec:
+{{- if .Values.useLetsEncrypt }}
+  ingressClassName: public
+  tls:
+    - hosts:
+        - {{ .Values.domain}}
+      secretName: {{ printf "%s-tls" (replace "." "-" .Values.domain) }}
+{{- end }}
+  rules:
+    - host: {{ .Values.domain}}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: semantic-backup
+                port:
+                  number: 8080
+{{- end }}

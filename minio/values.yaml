@@ -1,0 +1,22 @@
+#base image
+image: docker.io/pgsty/silo:RELEASE.2026-08-06T00-00-00Z
+#host storage path
+hostNode: "k8s-master"
+hostPort:
+  api: 9000
+  console: 9090
+# Container data storage
+# Existing host files are not copied automatically.
+persistence:
+  storageClassName: "longhorn"
+  size: "10Gi"
+# Silo preserves the MinIO configuration surface for compatibility.
+MINIO_ROOT_USER: "admin"
+MINIO_ROOT_PASSWORD: ""
+
+#max upload size
+maxUploadSize: 100m
+#set domain for ingress (leave blank to skip)
+serverHost: ""
+consoleHost: ""
+useLetsEncrypt: false

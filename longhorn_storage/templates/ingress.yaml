@@ -1,0 +1,39 @@
+{{- if .Values.domain }}
+{{- if .Values.longhorn.ingress.enabled }}
+{{- fail "Keep longhorn.ingress.enabled=false when using domain; the wrapper manages the authenticated ingress." }}
+{{- end }}
+apiVersion: "networking.k8s.io/v1"
+kind: "Ingress"
+metadata:
+  name: {{ printf "%s-ui" .Release.Name | quote }}
+  namespace: {{ .Release.Namespace | quote }}
+  annotations:
+    nginx.ingress.kubernetes.io/auth-type: "basic"
+    nginx.ingress.kubernetes.io/auth-secret: {{ printf "%s-ui-auth" .Release.Name | quote }}
+    nginx.ingress.kubernetes.io/auth-realm: "Longhorn login required"
+    nginx.ingress.kubernetes.io/ssl-redirect: {{ .Values.useLetsEncrypt | quote }}
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+{{- if .Values.useLetsEncrypt }}
+    cert-manager.io/cluster-issuer: "letsencrypt"
+{{- end }}
+spec:
+  ingressClassName: "public"
+{{- if .Values.useLetsEncrypt }}
+  tls:
+    - hosts:
+        - {{ .Values.domain | quote }}
+      secretName: {{ printf "%s-tls" (replace "." "-" .Values.domain) | quote }}
+{{- end }}
+  rules:
+    - host: {{ .Values.domain | quote }}
+      http:
+        paths:
+          - path: "/"
+            pathType: "Prefix"
+            backend:
+              service:
+                name: "longhorn-frontend"
+                port:
+                  number: 80
+{{- end }}

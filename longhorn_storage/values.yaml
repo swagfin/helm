@@ -1,0 +1,58 @@
+# Wrapper settings: converted into Longhorn Node resources and a StorageClass.
+# Per-cluster node names are supplied by your private values override file.
+# List only replica-storage nodes. Each entry accepts name and optional path/storageReserved.
+storageNodes: []
+storagePath: "/mnt/longhorn"
+storageNodeTag: "infra-storage"
+storageDiskTag: "infra-data"
+storageReserved: 0
+
+# Set a domain and credentials to publish the dashboard through ingress-nginx.
+domain: ""
+useLetsEncrypt: false
+basicAuth:
+  username: "admin"
+  password: ""
+
+storageClass:
+  name: "longhorn"
+  numberOfReplicas: 2
+
+longhorn:
+  persistence:
+    # Our storageclass.yaml creates the class; do not create a second one upstream.
+    createStorageClass: false
+  preUpgradeChecker:
+    # The upgrade check still runs in the manager; this Job is incompatible with GitOps.
+    jobEnabled: false
+  csi:
+    kubeletRootDir: "/var/snap/microk8s/common/var/lib/kubelet"
+  defaultSettings:
+    # Default StorageClass for PVs/PVCs cloned volumes through Longhorn's UI
+    defaultLonghornStaticStorageClass: "longhorn"
+    # No Kubernetes nodes are labeled for automatic disk creation by this chart.
+    # Storage disks are explicitly managed by the Longhorn Node resources instead.
+    createDefaultDiskLabeledNodes: true
+    defaultDataPath: "/mnt/longhorn"
+    defaultReplicaCount: 2
+    v1DataEngine: true
+    v2DataEngine: false
+    replicaSoftAntiAffinity: false
+    replicaZoneSoftAntiAffinity: true
+    storageMinimalAvailablePercentage: 25
+    storageOverProvisioningPercentage: 100
+    allowEmptyNodeSelectorVolume: false
+    allowEmptyDiskSelectorVolume: false
+    deletingConfirmationFlag: false
+    taintToleration: "node-role.kubernetes.io/control-plane:NoSchedule;node-role.kubernetes.io/master:NoSchedule"
+  global:
+    tolerations:
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
+        effect: "NoSchedule"
+      - key: "node-role.kubernetes.io/master"
+        operator: "Exists"
+        effect: "NoSchedule"
+  # Keep this section as `false` to avoid creating a second ingress through the upstream chart.
+  ingress:
+    enabled: false

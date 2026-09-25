@@ -1,0 +1,5 @@
+apiVersion: v2
+name: "minio"
+description: Silo Single Instance
+version: 1.0.4
+icon: "https://dl.min.io/logo/Minio_logo_light/Minio_logo_light.png"

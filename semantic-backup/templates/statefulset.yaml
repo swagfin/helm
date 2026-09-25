@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: semantic-backup
+  namespace: {{ .Release.Name }}
+  annotations:
+    configmap.reloader.stakater.com/reload: "app-configs"
+spec:
+  serviceName: semantic-backup
+  replicas: 1
+  selector:
+    matchLabels:
+      app: semantic-backup
+  template:
+    metadata:
+      labels:
+        app: semantic-backup
+    spec:
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        # Give the application group write access to its PVC.
+        fsGroup: 10001
+        fsGroupChangePolicy: "OnRootMismatch"
+      affinity:
+        # Keep the configured node placement for this release.
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - {{ .Values.hostNode }}
+
+      #allow pod to be scheduled even if node is not schedulable
+      tolerations:
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
+        effect: "NoSchedule"
+
+      containers:
+        - name: semantic-backup
+          image: ghcr.io/swagfin/semantic-backup:{{ .Values.version }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+
+          resources:
+            requests:
+              cpu: {{ .Values.resources.requests.cpu | quote }}
+              memory: {{ .Values.resources.requests.memory | quote }}
+            limits:
+              cpu: {{ .Values.resources.limits.cpu | quote }}
+              memory: {{ .Values.resources.limits.memory | quote }}
+
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 10
+            timeoutSeconds: 10
+
+          volumeMounts:
+            - name: volume-for-configs
+              mountPath: /app/Configs
+
+            - name: volume-for-data
+              mountPath: /app/Data
+
+            - name: volume-for-backups
+              mountPath: /backups
+
+      volumes:
+        - name: volume-for-configs
+          configMap:
+            name: app-configs
+
+        - name: volume-for-data
+          persistentVolumeClaim:
+            claimName: "semantic-backup-data"
+
+        - name: volume-for-backups
+          hostPath:
+            path: {{ .Values.hostBackupPath }}
+
+---
+#Prevent provisoning more than 1 pod (to Other Nodes, guarantees that only one runs)
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: max-pod-limit
+  namespace: {{ .Release.Name }}
+spec:
+  hard:
+    pods: 1

@@ -1,0 +1,179 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mssql
+  namespace: {{ .Release.Name }}
+  annotations:
+    configmap.reloader.stakater.com/reload: "mssql-tuning-script"
+spec:
+  serviceName: mssql
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mssql
+  template:
+    metadata:
+      labels:
+        app: mssql
+    spec:
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        # Allow the non-root SQL Server process to write to the PVC.
+        fsGroup: 10001
+        fsGroupChangePolicy: "OnRootMismatch"
+      affinity:
+        # Keep the configured node placement and access to local backup folders.
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - {{ .Values.hostNode }}
+
+      #allow pod to be scheduled even if node is not schedulable
+      tolerations:
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
+        effect: "NoSchedule"
+
+      containers:
+      - name: mssql
+        image: {{ .Values.image }}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: tcp
+          containerPort: 1433
+          {{- if gt (int .Values.hostPort) 0 }}
+          hostPort: {{ .Values.hostPort }} # on the node's IP
+          {{- end }}
+
+        env:
+        - name: ACCEPT_EULA
+          value: {{ .Values.ACCEPT_EULA | quote }}
+        - name: MSSQL_SA_PASSWORD
+          value: {{ required "Set MSSQL_SA_PASSWORD in your private values file" .Values.MSSQL_SA_PASSWORD | quote }}
+        - name: MSSQL_PID
+          value: {{ .Values.MSSQL_PID | quote }}
+        - name: PATH
+          value: "/opt/mssql-tools18/bin:/opt/mssql-tools/bin:/opt/mssql/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+        {{- if .Values.MSSQL_MEMORY_LIMIT_MB }}
+        - name: MSSQL_MEMORY_LIMIT_MB
+          value: {{ .Values.MSSQL_MEMORY_LIMIT_MB | quote }}
+        {{- end }}
+        {{- if .Values.MSSQL_MEMORY_DISABLE_PERCENT }}
+        - name: MSSQL_MEMORY_DISABLE_PERCENT
+          value: {{ .Values.MSSQL_MEMORY_DISABLE_PERCENT | quote }}
+        {{- end }}
+
+        lifecycle:
+          postStart:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - |
+                set -eu
+                LOG_FILE="/var/opt/mssql/data/.tuning-poststart.log"
+                exec >> "$LOG_FILE" 2>&1
+                log() { echo "[mssql-tuning][$(date -u +%Y-%m-%dT%H:%M:%SZ)] $*"; }
+                MARKER_FILE="/var/opt/mssql/data/.tuning-applied-v1"
+
+                SQLCMD_BIN=""
+                for candidate in /opt/mssql-tools18/bin/sqlcmd /opt/mssql-tools/bin/sqlcmd; do
+                  if [ -x "$candidate" ]; then
+                    SQLCMD_BIN="$candidate"
+                    break
+                  fi
+                done
+
+                if [ -z "$SQLCMD_BIN" ] && command -v sqlcmd >/dev/null 2>&1; then
+                  SQLCMD_BIN="$(command -v sqlcmd)"
+                fi
+
+                if [ -z "$SQLCMD_BIN" ]; then
+                  log "sqlcmd not found; cannot run MSSQL bootstrap scripts."
+                  exit 1
+                fi
+
+                max_tries=60
+                i=0
+                while true; do
+                  if "$SQLCMD_BIN" -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -Q "SELECT 1" -b -l 5 >/dev/null 2>&1; then
+                    break
+                  fi
+                  i=$((i+1))
+                  if [ "$i" -ge "$max_tries" ]; then
+                    log "Timed out waiting for MSSQL readiness before running bootstrap scripts."
+                    exit 1
+                  fi
+                  sleep 5
+                done
+
+                if [ -f "$MARKER_FILE" ]; then
+                  log "Tuning already applied for this data volume. Skipping tuning script."
+                else
+                  log "Running /opt/mssql/tuning/tune-performance.sql"
+                  "$SQLCMD_BIN" -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -d master -b -i /opt/mssql/tuning/tune-performance.sql
+                  touch "$MARKER_FILE"
+                  log "Tuning completed."
+                fi
+
+                log "Running /opt/mssql/tuning/create-admin-users.sql"
+                "$SQLCMD_BIN" -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -d master -b -i /opt/mssql/tuning/create-admin-users.sql
+                log "Admin user provisioning completed."
+
+        #readiness probe
+        readinessProbe:
+          tcpSocket:
+            port: 1433
+          initialDelaySeconds: 15
+          periodSeconds: 5
+          timeoutSeconds: 5
+          failureThreshold: 6
+
+        resources:
+          requests:
+            cpu: {{ .Values.resources.requests.cpu | quote }}
+            memory: {{ .Values.resources.requests.memory | quote }}
+          limits:
+            cpu: {{ .Values.resources.limits.cpu | quote }}
+            memory: {{ .Values.resources.limits.memory | quote }}
+
+        volumeMounts:
+        - name: volume-for-data
+          # Persist SQL Server data, logs and secrets together.
+          mountPath: "/var/opt/mssql"
+
+        - name: volume-for-tuning-script
+          mountPath: /opt/mssql/tuning
+          readOnly: true
+
+        - name: volume-for-backups
+          mountPath: /backups
+
+      volumes:
+        - name: volume-for-data
+          persistentVolumeClaim:
+            claimName: "mssql-data"
+
+        - name: volume-for-backups
+          hostPath:
+            path: {{ .Values.hostBackupPath }}
+            type: DirectoryOrCreate
+
+        - name: volume-for-tuning-script
+          configMap:
+            name: mssql-tuning-script
+
+---
+#Prevent provisoning more than 1 pod (to Other Nodes, guarantees thats only the one specified)
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: max-pod-limit
+  namespace: {{ .Release.Name }}
+spec:
+  hard:
+    pods: 1

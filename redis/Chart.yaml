@@ -1,0 +1,4 @@
+apiVersion: v2
+name: "redis"
+description: Redis Single Instance
+version: 1.0.3

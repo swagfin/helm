@@ -1,0 +1,29 @@
+#API Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio
+  namespace: {{ .Release.Name }}
+spec:
+  selector:
+    app: minio
+  ports:
+  - port: 9000
+    targetPort: 9000
+
+#### HOW TO CONNECT ##
+# MinIO API: minio.{{ .Release.Name }}.svc.cluster.local:9000
+---
+#Console Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio-console
+  namespace: {{ .Release.Name }}
+spec:
+  selector:
+    app: minio
+  ports:
+  - name: console
+    port: 9090
+    targetPort: 9090

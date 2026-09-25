@@ -1,0 +1,4 @@
+apiVersion: v2
+name: "default-landing-zone"
+description: A Helm chart for the default server landing zone
+version: 1.0.1

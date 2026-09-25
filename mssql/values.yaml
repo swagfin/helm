@@ -1,0 +1,39 @@
+#base image
+image: rapidfort/microsoft-sql-server-2019-ib:2019-CU15-ubi-8
+#target Node (host node for the service)
+hostNode: "k8s-master"
+#Enable External Access Port: hostPort: 1433
+hostPort: 1433
+# Host path for Backups
+hostBackupPath: "/backups"
+# Container data storage
+# Existing host files are not copied automatically.
+persistence:
+  storageClassName: "longhorn"
+  size: "10Gi"
+## Configuration
+ACCEPT_EULA: "Y"
+#[default: Developer, Express, Standard, Enterprise]
+MSSQL_PID: "Enterprise"
+MSSQL_SA_PASSWORD: ""
+
+## Optional SQL admin logins created/updated on pod startup
+adminUsers: []
+# - name: "sql-admin"
+#   password: "<set-your-admin-password>"
+#   serverRoles:
+#   - "sysadmin"
+
+## Optional SQL memory knobs
+# Recommended performance baseline (adjust to your node capacity)
+MSSQL_MEMORY_LIMIT_MB: "6144"
+MSSQL_MEMORY_DISABLE_PERCENT: "10"
+
+## Optional pod resources
+resources:
+  requests:
+    cpu: "1000m"
+    memory: "2Gi"
+  limits:
+    cpu: "4000m"
+    memory: "8Gi"

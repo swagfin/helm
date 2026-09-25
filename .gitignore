@@ -1,0 +1,5 @@
+**/charts/
+*.tgz
+.DS_Store
+my-values*.yaml
+*.private.yaml

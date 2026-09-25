@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mssql-tuning-script
+  namespace: {{ .Release.Name }}
+data:
+  tune-performance.sql: |
+{{ .Files.Get "scripts/tune-performance.sql" | nindent 4 }}
+  create-admin-users.sql: |
+    SET NOCOUNT ON;
+
+    PRINT 'Starting MSSQL admin user provisioning...';
+
+{{- if .Values.adminUsers }}
+{{- range .Values.adminUsers }}
+{{- $name := required "adminUsers[].name is required" .name }}
+{{- $password := required (printf "adminUsers password is required for %s" $name) .password }}
+{{- $loginName := replace "]" "]]" $name }}
+{{- $loginLiteral := replace "'" "''" $name }}
+{{- $passwordLiteral := replace "'" "''" $password }}
+    IF NOT EXISTS (SELECT 1 FROM sys.sql_logins WHERE name = N'{{ $loginLiteral }}')
+    BEGIN
+      CREATE LOGIN [{{ $loginName }}] WITH PASSWORD = N'{{ $passwordLiteral }}', CHECK_POLICY = ON, CHECK_EXPIRATION = OFF;
+      PRINT 'Created login {{ $loginLiteral }}.';
+    END
+    ELSE
+    BEGIN
+      ALTER LOGIN [{{ $loginName }}] WITH PASSWORD = N'{{ $passwordLiteral }}', CHECK_POLICY = ON, CHECK_EXPIRATION = OFF;
+      PRINT 'Updated login {{ $loginLiteral }}.';
+    END
+
+{{- if .serverRoles }}
+{{- range .serverRoles }}
+{{- $roleName := replace "]" "]]" . }}
+{{- $roleLiteral := replace "'" "''" . }}
+    IF IS_SRVROLEMEMBER(N'{{ $roleLiteral }}', N'{{ $loginLiteral }}') = 0
+    BEGIN
+      ALTER SERVER ROLE [{{ $roleName }}] ADD MEMBER [{{ $loginName }}];
+      PRINT 'Added {{ $loginLiteral }} to {{ $roleLiteral }}.';
+    END
+
+{{- end }}
+{{- else }}
+    IF IS_SRVROLEMEMBER(N'sysadmin', N'{{ $loginLiteral }}') = 0
+    BEGIN
+      ALTER SERVER ROLE [sysadmin] ADD MEMBER [{{ $loginName }}];
+      PRINT 'Added {{ $loginLiteral }} to sysadmin.';
+    END
+
+{{- end }}
+{{- end }}
+{{- else }}
+    PRINT 'No admin users configured.';
+{{- end }}
+
+    PRINT 'MSSQL admin user provisioning completed.';

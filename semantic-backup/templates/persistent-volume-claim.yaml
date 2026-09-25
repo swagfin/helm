@@ -1,0 +1,12 @@
+apiVersion: "v1"
+kind: "PersistentVolumeClaim"
+metadata:
+  name: "semantic-backup-data"
+  namespace: {{ .Release.Name | quote }}
+spec:
+  storageClassName: {{ .Values.persistence.storageClassName | quote }}
+  accessModes:
+    - "ReadWriteOncePod"
+  resources:
+    requests:
+      storage: {{ required "persistence.size is required" .Values.persistence.size | quote }}

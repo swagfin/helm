@@ -1,0 +1,21 @@
+## For Low Latency scenario, using headless service for redis
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: redis
+spec:
+  selector:
+    app: redis
+  clusterIP: None
+  # We want all pods in the StatefulSet to have their addresses published to
+  # be able to talk to each other in order to become ready.
+  publishNotReadyAddresses: true
+  ports:
+  - port: 6379
+    targetPort: 6379
+
+
+#### HOW TO CONNECT ##
+#  redis.redis.svc.cluster.local:6379
+# OR target specific pod: redis-0.redis.redis.svc.cluster.local:6379

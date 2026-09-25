@@ -1,0 +1,101 @@
+#configurations
+version: v6.0.0.3
+#target Node (host node for the service)
+hostNode: "k8s-master"
+# Shared backup exchange remains on the selected host.
+hostBackupPath: "/backups"
+# Container data storage
+# Existing host files are not copied automatically.
+persistence:
+  storageClassName: "longhorn"
+  size: "5Gi"
+#resource allocation
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    cpu: 2000m
+    memory: 1Gi
+#set domain for ingress (leave blank to skip)
+domain: ""
+useLetsEncrypt: false
+
+#appsettings
+appsettings:
+  Logging:
+    LogLevel:
+      Default: "Information"
+      Microsoft: "Warning"
+      Microsoft.Hosting.Lifetime: "Warning"
+  AllowedHosts: "*"
+
+#  AdminUsers:
+#    - FullName: "Administrator"
+#      EmailAddress: "admin@example.com"
+#      Password: "<choose-a-strong-password>"
+#      Timezone: "Africa/Nairobi"
+#      TimezoneOffset: "+03:00"
+#
+
+
+#  BackupConfigurations:
+#    - Name: "Main SQL Server"
+#      Type: "SQLSERVER"
+#      ConnectionString: "Server=127.0.0.1,1433;User ID=sa;Password=StrongPassword;TrustServerCertificate=True;"
+#      Databases:
+#        - Name: "test-db"
+#          BackupEveryHrs: 3
+#          FullBackup: true
+#      UploadTo:
+#        - "downloadLink"
+#        - "ftp"
+#        - "smtp"
+
+  UploadConfigurations:
+    DownloadLink:
+      UseShortDownloadLink: true
+    Ftp:
+      Server: "ftp.example.com"
+      Username: "ftp-user"
+      Password: ""
+      Directory: "/backups/"
+    Smtp:
+      SMTPEnableSSL: true
+      SMTPHost: "mail.smtp.domain.com"
+      SMTPPort: 587
+      SMTPEmailAddress: "backups@example.com"
+      SMTPEmailCredentials: ""
+      SMTPDefaultSMTPFromName: "SEMANTIC SYSTEM BACKUP"
+      SMTPDestinations: "ops@example.com"
+    ObjectStorage:
+      Server: "localhost"
+      Port: 9000
+      Bucket: "backups"
+      AccessKey: ""
+      SecretKey: ""
+      UseSsl: false
+    Dropbox:
+      AccessToken: ""
+      Directory: "/backups/"
+
+  NotificationConfigs:
+    NotifyOnBackupFailure: false
+    NotifyOnUploadFailure: false
+    NotifyEmailDestinations: []
+
+  SystemConfigOptions:
+    DefaultBackupDirectory: "/backups"
+    BackupFileSaveFormat: "{{database}}-{{datetime}}.{{databasetype}}.bak"
+    MaxWorkers: 2
+    AutoCompressToZip: true
+    BackupExpiryAgeInDays: 3
+    ExecutionTimeoutInMinutes: 10
+    InDepthBackupRecordDeleteEnabled: true
+
+    SMTPEmailAddress: "backups@example.com"
+    SMTPEmailCredentials: ""
+    SMTPPort: 587
+    SMTPEnableSSL: false
+    SMTPHost: "smtp.example.com"
+    SMTPDefaultSMTPFromName: "SEMANTIC SYSTEM BACKUP"

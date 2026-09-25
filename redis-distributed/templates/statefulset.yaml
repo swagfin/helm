@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: redis
+spec:
+  serviceName: redis
+  podManagementPolicy: Parallel
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        # Give the application group write access to its PVC.
+        fsGroup: 10001
+        fsGroupChangePolicy: "OnRootMismatch"
+      affinity:
+        # Ensure only one Redis pod runs per node
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - redis
+            topologyKey: kubernetes.io/hostname
+
+      containers:
+      - name: redis
+        image: {{ .Values.image }}
+        imagePullPolicy: IfNotPresent
+        command:
+          - "/bin/sh"
+          - "-c"
+        args:
+          - |
+            echo "Generating Redis configuration..."
+            cat <<EOF > /etc/redis.conf
+            port 6379
+            appendonly yes
+            EOF
+
+            {{- if gt (int .Values.replicaCount) 1 }}
+            if [ "$(hostname)" != "redis-0" ]; then
+              echo "replicaof redis-0.redis 6379" >> /etc/redis.conf
+            fi
+            {{- end }}
+
+            echo "Starting Redis with generated configuration..."
+            redis-server /etc/redis.conf
+
+        ports:
+          - containerPort: 6379
+
+#readiness probe
+        readinessProbe:
+          tcpSocket:
+            port: 6379
+          initialDelaySeconds: 15
+          timeoutSeconds: 10
+
+#volume mounts
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
+
+  volumeClaimTemplates:
+    - metadata:
+        name: "redis-data"
+      spec:
+        storageClassName: {{ .Values.persistence.storageClassName | quote }}
+        accessModes:
+          - "ReadWriteOncePod"
+        resources:
+          requests:
+            storage: {{ required "persistence.size is required" .Values.persistence.size | quote }}

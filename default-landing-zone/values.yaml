@@ -1,0 +1,14 @@
+#configurations
+replicaCount: 1
+# Namespace must exist before installing the chart.
+namespace: "default"
+# Leave blank to hide the support link.
+supportUrl: ""
+#resource allocation
+limits:
+  cpu: 20m
+  memory: 80Mi
+
+#set domain for ingress (leave blank to skip)
+domain: ""
+useLetsEncrypt: false
