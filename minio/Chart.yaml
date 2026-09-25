@@ -1,3 +1,4 @@
+# Shared with Love by George
 apiVersion: v2
 name: "minio"
 description: Silo Single Instance

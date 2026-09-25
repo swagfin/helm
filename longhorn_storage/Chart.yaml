@@ -1,3 +1,4 @@
+# Shared with Love by George
 apiVersion: "v2"
 name: "longhorn-storage"
 description: "Longhorn installation and storage placement for the infrastructure cluster"

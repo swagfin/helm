@@ -1,5 +1,7 @@
 # Third-party components
 
+These custom charts are shared with love by George; credit for their dependencies stays with the original authors.
+
 These charts deploy software maintained and licensed by its respective authors. Publishing these deployment templates does not grant rights to container images, SQL Server, Longhorn, Redis, Silo/MinIO, or Semantic Backup.
 
 - Longhorn is consumed from https://charts.longhorn.io; its chart and software retain their upstream licensing.

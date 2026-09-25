@@ -1,3 +1,4 @@
+# Shared with Love by George
 apiVersion: v2
 name: "redis"
 description: Redis Single Instance

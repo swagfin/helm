@@ -1,3 +1,4 @@
+# Shared with Love by George
 apiVersion: v2
 name: "default-landing-zone"
 description: A Helm chart for the default server landing zone

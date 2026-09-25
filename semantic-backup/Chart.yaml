@@ -1,3 +1,4 @@
+# Shared with Love by George
 apiVersion: v2
 name: "semantic-backup"
 description: A Helm chart for Semantic Backup Client
