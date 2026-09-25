@@ -7,6 +7,9 @@ hostPort: 1433
 # Host path for Backups
 hostBackupPath: "/backups"
 # Container data storage
+# true reuses useHostStoragePath/<release-name>; false uses the PVC settings below.
+useHostStorage: false
+useHostStoragePath: "/mssql"
 # Existing host files are not copied automatically.
 persistence:
   storageClassName: "longhorn"

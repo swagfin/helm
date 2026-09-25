@@ -1,3 +1,4 @@
+{{- if not .Values.useHostStorage }}
 apiVersion: "v1"
 kind: "PersistentVolumeClaim"
 metadata:
@@ -10,3 +11,4 @@ spec:
   resources:
     requests:
       storage: {{ required "persistence.size is required" .Values.persistence.size | quote }}
+{{- end }}

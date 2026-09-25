@@ -25,10 +25,10 @@ Every chart lives directly at the repository root. No extra `helm/` or `charts/`
 | Chart | What's inside |
 |---|---|
 | [longhorn_storage](longhorn_storage/) | Longhorn wrapper with explicit replica-storage nodes, a StorageClass, and an optional authenticated dashboard ingress. |
-| [mssql](mssql/) | Single SQL Server instance, PVC data storage, a host backup folder, and tuning scripts. |
+| [mssql](mssql/) | Single SQL Server instance, PVC or host data storage, a host backup folder, and tuning scripts. |
 | [default-landing-zone](default-landing-zone/) | A friendly ingress fallback page with an interactive, locally bundled Kubernetes illustration. |
 | [semantic-backup](semantic-backup/) | My database backup service deployment, with persistent application data and configurable upload destinations. |
-| [mariadb](mariadb/) | Single MariaDB instance with PVC data storage and configurable node placement. |
+| [mariadb](mariadb/) | Single MariaDB instance with PVC or host data storage and configurable node placement. |
 | [minio](minio/) | S3-compatible object storage, currently using the Silo image with MinIO-compatible settings. |
 | [redis](redis/) | A single Redis instance with persistent storage. |
 | [redis-distributed](redis-distributed/) | Redis primary/replica setup with a separate PVC per pod and pods spread across nodes. |
@@ -65,6 +65,7 @@ persistence:
   size: "5Gi"
 ```
 
+- MSSQL and MariaDB default to PVC storage (`useHostStorage: false`). Set `useHostStorage: true` to reuse `useHostStoragePath/<release-name>` on the configured node. Defaults are `/mssql` and `/mariadb`. Switching modes does not move data; enabling host storage stops rendering the data PVC.
 - MSSQL defaults to **10Gi**. The other application storage charts here default to **5Gi** per claim.
 - Application data claims use **ReadWriteOncePod**; your Kubernetes version and CSI driver must support it.
 - Redis Distributed creates **one claim per pod**. Its database replication is separate from Longhorn's storage replication.

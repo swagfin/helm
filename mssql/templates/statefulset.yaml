@@ -17,10 +17,12 @@ spec:
         app: mssql
     spec:
       terminationGracePeriodSeconds: 30
+      {{- if not .Values.useHostStorage }}
       securityContext:
         # Allow the non-root SQL Server process to write to the PVC.
         fsGroup: 10001
         fsGroupChangePolicy: "OnRootMismatch"
+      {{- end }}
       affinity:
         # Keep the configured node placement and access to local backup folders.
         nodeAffinity:
@@ -143,8 +145,13 @@ spec:
 
         volumeMounts:
         - name: volume-for-data
+          {{- if .Values.useHostStorage }}
+          # Preserve the original host folder layout for existing database files.
+          mountPath: "/var/opt/mssql/data"
+          {{- else }}
           # Persist SQL Server data, logs and secrets together.
           mountPath: "/var/opt/mssql"
+          {{- end }}
 
         - name: volume-for-tuning-script
           mountPath: /opt/mssql/tuning
@@ -155,8 +162,14 @@ spec:
 
       volumes:
         - name: volume-for-data
+          {{- if .Values.useHostStorage }}
+          hostPath:
+            path: {{ printf "%s/%s" (trimSuffix "/" (required "useHostStoragePath is required when useHostStorage is true" .Values.useHostStoragePath)) .Release.Name | quote }}
+            type: DirectoryOrCreate
+          {{- else }}
           persistentVolumeClaim:
             claimName: "mssql-data"
+          {{- end }}
 
         - name: volume-for-backups
           hostPath:
