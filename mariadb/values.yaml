@@ -1,0 +1,13 @@
+#base image
+image: rapidfort/mariadb-official:10.11.9-ubi9
+#host storage path
+hostNode: "k8s-master"
+#Enable External Access Port: hostPort: 3306
+hostPort: 3306
+# Container data storage
+# Existing host files are not copied automatically.
+persistence:
+  storageClassName: "longhorn"
+  size: "5Gi"
+## Configuration
+MYSQL_ROOT_PASSWORD: ""

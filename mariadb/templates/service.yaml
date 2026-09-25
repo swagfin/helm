@@ -1,0 +1,15 @@
+##service
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb
+  namespace: {{ .Release.Name }}
+spec:
+  selector:
+    app: mariadb
+  ports:
+  - port: 3306
+    targetPort: 3306
+
+#### HOW TO CONNECT ##
+#mariadb.{{ .Release.Name }}.svc.cluster.local:3306

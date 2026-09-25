@@ -21,10 +21,11 @@ jobs:
           set -euo pipefail
           helm repo add longhorn https://charts.longhorn.io
           helm dependency build ./longhorn_storage
-          for chart in longhorn_storage mssql default-landing-zone semantic-backup minio redis redis-distributed; do
+          for chart in longhorn_storage mariadb mssql default-landing-zone semantic-backup minio redis redis-distributed; do
             args=()
             case "$chart" in
               mssql) args+=(--set-string 'MSSQL_SA_PASSWORD=ValidationOnly-Password42!') ;;
+              mariadb) args+=(--set-string 'MYSQL_ROOT_PASSWORD=ValidationOnly-Password42!') ;;
               minio) args+=(--set-string 'MINIO_ROOT_PASSWORD=ValidationOnly-Password42!') ;;
             esac
             helm lint "./$chart" "${args[@]}"

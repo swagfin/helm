@@ -28,6 +28,7 @@ Every chart lives directly at the repository root. No extra `helm/` or `charts/`
 | [mssql](mssql/) | Single SQL Server instance, PVC data storage, a host backup folder, and tuning scripts. |
 | [default-landing-zone](default-landing-zone/) | A friendly ingress fallback page with an interactive, locally bundled Kubernetes illustration. |
 | [semantic-backup](semantic-backup/) | My database backup service deployment, with persistent application data and configurable upload destinations. |
+| [mariadb](mariadb/) | Single MariaDB instance with PVC data storage and configurable node placement. |
 | [minio](minio/) | S3-compatible object storage, currently using the Silo image with MinIO-compatible settings. |
 | [redis](redis/) | A single Redis instance with persistent storage. |
 | [redis-distributed](redis-distributed/) | Redis primary/replica setup with a separate PVC per pod and pods spread across nodes. |
@@ -90,7 +91,7 @@ Read the chart's `values.yaml` before installing. Keep your actual credentials a
 | `hostNode` | Where present, replace `k8s-master` with your node name. These workloads are pinned to that node. |
 | Namespace | Most application charts create a namespace matching the Helm release name. Redis Distributed uses the fixed `redis` namespace and resource names, so install only one instance per cluster. |
 | Ingress | Ingress templates use the `public` class. TLS options expect a `letsencrypt` ClusterIssuer and cert-manager. |
-| Credentials | MSSQL and MinIO require you to supply their password values. Longhorn requires dashboard credentials when a domain is enabled. |
+| Credentials | MSSQL, MariaDB, and MinIO require you to supply their password values. Longhorn requires dashboard credentials when a domain is enabled. |
 | Images | Check image access and licensing. Semantic Backup uses `ghcr.io/swagfin/semantic-backup`; this repository does not include the application source or grant registry access. |
 | Redis replication | Redis Distributed uses a fixed `redis-0` primary; it does not configure Sentinel, Redis Cluster, or automatic primary promotion. |
 | Upgrades | Existing StatefulSets cannot adopt changed volume claim templates in place. Plan storage changes and recovery before upgrading. |
