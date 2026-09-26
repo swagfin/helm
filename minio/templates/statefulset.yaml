@@ -15,10 +15,12 @@ spec:
         app: minio
     spec:
       terminationGracePeriodSeconds: 30
+      {{- if not .Values.useHostStorage }}
       securityContext:
         # Give the application group write access to its PVC.
         fsGroup: 10001
         fsGroupChangePolicy: "OnRootMismatch"
+      {{- end }}
       affinity:
         # Keep the configured node placement for this release.
         nodeAffinity:
@@ -88,8 +90,13 @@ spec:
 
       volumes:
       - name: minio-data
+        {{- if .Values.useHostStorage }}
+        hostPath:
+          path: {{ printf "%s/%s" (trimSuffix "/" (required "useHostStoragePath is required when useHostStorage is true" .Values.useHostStoragePath)) .Release.Name | quote }}
+        {{- else }}
         persistentVolumeClaim:
           claimName: "minio-data"
+        {{- end }}
 
 ---
 #Prevent provisoning more than 1 pod (to Other Nodes, guarantees thats only the one specified)

@@ -6,6 +6,9 @@ hostPort:
   api: 9000
   console: 9090
 # Container data storage
+# true reuses useHostStoragePath/<release-name>; false uses the PVC settings below.
+useHostStorage: false
+useHostStoragePath: "/minio"
 # Existing host files are not copied automatically.
 persistence:
   storageClassName: "longhorn"
