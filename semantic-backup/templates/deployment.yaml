@@ -1,5 +1,5 @@
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: semantic-backup
   namespace: {{ .Release.Name }}
@@ -8,8 +8,10 @@ metadata:
 spec:
   # Keep three previous revisions for rollback.
   revisionHistoryLimit: 3
-  serviceName: semantic-backup
   replicas: 1
+  strategy:
+    # Stop the old Pod before its replacement starts so the RWOP claim is released.
+    type: "Recreate"
   selector:
     matchLabels:
       app: semantic-backup
