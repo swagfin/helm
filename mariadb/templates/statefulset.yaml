@@ -4,6 +4,8 @@ metadata:
   name: mariadb
   namespace: {{ .Release.Name }}
 spec:
+  # Keep three previous revisions for rollback.
+  revisionHistoryLimit: 3
   serviceName: mariadb
   replicas: 1
   selector:

@@ -4,6 +4,8 @@ metadata:
   name: redis
   namespace: redis
 spec:
+  # Keep three previous revisions for rollback.
+  revisionHistoryLimit: 3
   serviceName: redis
   podManagementPolicy: Parallel
   replicas: {{ .Values.replicaCount }}

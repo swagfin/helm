@@ -6,6 +6,8 @@ metadata:
   annotations:
     configmap.reloader.stakater.com/reload: "app-configs"
 spec:
+  # Keep three previous revisions for rollback.
+  revisionHistoryLimit: 3
   serviceName: semantic-backup
   replicas: 1
   selector:

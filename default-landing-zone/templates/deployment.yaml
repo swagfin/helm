@@ -6,6 +6,8 @@ metadata:
   annotations:
     configmap.reloader.stakater.com/reload: "default-landing-zone-page"
 spec:
+  # Keep three previous revisions for rollback.
+  revisionHistoryLimit: 3
   replicas: {{ .Values.replicaCount }}
   strategy:
     type: RollingUpdate

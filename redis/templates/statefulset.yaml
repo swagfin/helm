@@ -4,6 +4,8 @@ metadata:
   name: redis
   namespace: {{ .Release.Name }}
 spec:
+  # Keep three previous revisions for rollback.
+  revisionHistoryLimit: 3
   serviceName: redis
   replicas: 1
   selector:

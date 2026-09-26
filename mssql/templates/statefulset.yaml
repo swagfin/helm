@@ -6,6 +6,8 @@ metadata:
   annotations:
     configmap.reloader.stakater.com/reload: "mssql-tuning-script"
 spec:
+  # Keep three previous revisions for rollback.
+  revisionHistoryLimit: 3
   serviceName: mssql
   replicas: 1
   selector:
