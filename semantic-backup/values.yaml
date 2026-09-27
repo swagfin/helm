@@ -8,7 +8,7 @@ hostBackupPath: "/backups"
 # Existing host files are not copied automatically.
 persistence:
   storageClassName: "longhorn"
-  size: "5Gi"
+  size: "1Gi"
 #resource allocation
 resources:
   requests:
