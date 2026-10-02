@@ -21,10 +21,12 @@ spec:
         app: semantic-backup
     spec:
       terminationGracePeriodSeconds: 30
+      {{- if .Values.persistence.enabled }}
       securityContext:
         # Give the application group write access to its PVC.
         fsGroup: 10001
         fsGroupChangePolicy: "OnRootMismatch"
+      {{- end }}
       affinity:
         # Keep the configured node placement for this release.
         nodeAffinity:
@@ -68,8 +70,10 @@ spec:
             - name: volume-for-configs
               mountPath: /app/Configs
 
+            {{- if .Values.persistence.enabled }}
             - name: volume-for-data
               mountPath: /app/Data
+            {{- end }}
 
             - name: volume-for-backups
               mountPath: /backups
@@ -79,9 +83,11 @@ spec:
           configMap:
             name: app-configs
 
+        {{- if .Values.persistence.enabled }}
         - name: volume-for-data
           persistentVolumeClaim:
             claimName: "semantic-backup-data"
+        {{- end }}
 
         - name: volume-for-backups
           hostPath:

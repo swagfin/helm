@@ -7,6 +7,8 @@ hostBackupPath: "/backups"
 # Container data storage
 # Existing host files are not copied automatically.
 persistence:
+  # When false, /app/Data stays in the container and is lost when it is replaced.
+  enabled: true
   storageClassName: "longhorn"
   size: "1Gi"
 #resource allocation
